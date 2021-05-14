@@ -222,7 +222,10 @@ class ConfluenceAPI():
         response = self.put(path=path, data=new_page)
         print(response)
 
-        page_url = urljoin(self.api_url, response['_links']['webui'])
+        page_url = urljoin(
+            self.api_url,
+            response['_links']['context'] + response['_links']['webui']
+        )
 
         self.create_labels(page_id=page_id, slug=slug)
 
