@@ -87,8 +87,10 @@ def create_or_update_page(page_path, args, confluence_api):
 
     # TODO: Check author from metadata and confluence
 
-    # TODO: Add attachments
-    html = convert_to_confluence(markdown, metadata=metadata)
+    html, attachments = convert_to_confluence(markdown, metadata=metadata)
+
+    for i, attachment in enumerate(attachments):
+        attachments[i] = os.path.abspath(attachment.lstrip('/'))
 
     page_slug = get_slug(page_path)
 
@@ -108,13 +110,15 @@ def create_or_update_page(page_path, args, confluence_api):
                               slug=page_slug,
                               space=space,
                               ancestor_id=ancestor_id,
-                              page=page)
+                              page=page,
+                              attachments=attachments)
     else:
         confluence_api.create(content=html,
                               title=metadata['title'],
                               slug=page_slug,
                               space=space,
-                              ancestor_id=ancestor_id)
+                              ancestor_id=ancestor_id,
+                              attachments=attachments)
 
 
 def main():

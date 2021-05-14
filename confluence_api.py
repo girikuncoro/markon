@@ -1,5 +1,6 @@
 import requests
 import logging
+import os
 
 from urllib.parse import urljoin
 
@@ -45,10 +46,14 @@ class ConfluenceAPI():
         method='GET',
         path='',
         params=None,
-        data=None
+        data=None,
+        files=None
     ):
         url = urljoin(self.api_url, path)
         headers = {}
+
+        if files:
+            headers.update({'X-Atlassian-Token': 'nocheck'})
 
         if data:
             headers.update({'Content-Type': 'application/json'})
@@ -57,7 +62,8 @@ class ConfluenceAPI():
                                          url=url,
                                          params=params,
                                          json=data,
-                                         headers=headers)
+                                         headers=headers,
+                                         files=files)
 
         if not response.ok:
             log.info('''{method} {url}: {status_code} {reason}
@@ -67,7 +73,8 @@ class ConfluenceAPI():
                                    status_code=response.status_code,
                                    reason=response.reason,
                                    params=params,
-                                   data=data))
+                                   data=data,
+                                   files=files))
             print(response.content)
             return response.content
 
@@ -76,8 +83,8 @@ class ConfluenceAPI():
     def get(self, path=None, params=None):
         return self._request(method='GET', path=path, params=params)
 
-    def post(self, path=None, params=None, data=None):
-        return self._request(method='POST', path=path, params=params, data=data)
+    def post(self, path=None, params=None, data=None, files=None):
+        return self._request(method='POST', path=path, params=params, data=data, files=files)
 
     def put(self, path=None, params=None, data=None):
         return self._request(method='PUT', path=path, params=params, data=data)
@@ -125,6 +132,19 @@ class ConfluenceAPI():
         ))
         return labels
 
+    def upload_attachment(self, page_id=None, attachment_path=None):
+        path = 'content/{}/child/attachment'.format(page_id)
+        if not os.path.exists(attachment_path):
+            log.error('Attachment {} does not exist'.format(attachment_path))
+            return
+        log.info('Uploading attachment {attachment_path} to page {page_id}'.format(
+            attachment_path=attachment_path, page_id=page_id
+        ))
+        self.post(path=path,
+                  params={'allowDuplicated': 'true'},
+                  files={'file': open(attachment_path, 'rb')})
+        log.info('Uploaded {} to page id {}'.format(attachment_path, page_id))
+
     def _create_page_payload(
         self,
         content=None,
@@ -157,6 +177,7 @@ class ConfluenceAPI():
         title=None,
         ancestor_id=None,
         slug=None,
+        attachments=None,
         type='page'
     ):
         self._require_kwargs({
@@ -187,7 +208,8 @@ class ConfluenceAPI():
             title=title,
             ancestor_id=ancestor_id,
             slug=slug,
-            page=response
+            page=response,
+            attachments=attachments
         )
 
     def update(
@@ -199,6 +221,7 @@ class ConfluenceAPI():
         ancestor_id=None,
         slug=None,
         page=None,
+        attachments=None,
         type='page'
     ):
         self._require_kwargs({
@@ -208,6 +231,12 @@ class ConfluenceAPI():
             'page_id': page_id,
             'space': space
         })
+
+        if attachments is None:
+            attachments = []
+
+        for attachment in attachments:
+            self.upload_attachment(page_id=page_id, attachment_path=attachment)
 
         new_page = self._create_page_payload(content=content,
                                              title=title,

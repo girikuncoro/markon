@@ -1,6 +1,8 @@
 import yaml
 import mistune
 import textwrap
+import os
+from urllib.parse import urlparse
 
 YAML_END = '---'
 
@@ -29,12 +31,12 @@ def convert_to_confluence(markdown, metadata={}):
     content_html = mistune.markdown(markdown, renderer=renderer)
     page_html = renderer.layout(content_html)
 
-    # TODO: return attachments
-    return page_html
+    return page_html, renderer.attachments
 
 
 class ConfluenceRenderer(mistune.Renderer):
     def __init__(self):
+        self.attachments = []
         super().__init__()
 
     def layout(self, content):
@@ -51,3 +53,13 @@ class ConfluenceRenderer(mistune.Renderer):
         sidebar = column.format(width='30%', content=toc)
         main_content = column.format(width='800px', content=content)
         return sidebar + main_content
+
+    def image(self, src, title, alt_text):
+        is_external = bool(urlparse(src).netloc)
+        tag_template = '<ac:image>{image_tag}</ac:image>'
+        image_tag = '<ri:url ri:value="{}" />'.format(src)
+        if not is_external:
+            image_tag = '<ri:attachment ri:filename="{}" />'.format(
+                os.path.basename(src))
+            self.attachments.append(src)
+        return tag_template.format(image_tag=image_tag)
