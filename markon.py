@@ -5,7 +5,7 @@ import argparse
 import logging
 
 from confluence_api import ConfluenceAPI
-from converter import parse
+from converter import parse, convert_to_confluence
 
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -88,16 +88,13 @@ def create_or_update_page(page_path, args, confluence_api):
     # TODO: Check author from metadata and confluence
 
     # TODO: Add attachments
-    # html = convert_to_confluence(markdown, metadata=metadata)
-    html = '<p>Test content created from markon</p>'
+    html = convert_to_confluence(markdown, metadata=metadata)
 
     page_slug = get_slug(page_path)
 
     ancestor_id = metadata['confluence'].get('ancestor_id', args.ancestor_id)
     space = metadata['confluence'].get('space', args.space)
 
-    # TODO: Check confluence page exists
-    # page = confluence_api.exists()
     page = confluence_api.exists(
         slug=page_slug,
         ancestor_id=ancestor_id,
