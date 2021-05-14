@@ -89,6 +89,7 @@ def create_or_update_page(page_path, args, confluence_api):
 
     # TODO: Add attachments
     # html = convert_to_confluence(markdown, metadata=metadata)
+    html = '<p>Test content created from markon</p>'
 
     page_slug = get_slug(page_path)
 
@@ -104,17 +105,24 @@ def create_or_update_page(page_path, args, confluence_api):
     )
 
     if page:
-        log.info('Page {} exists'.format(page))
-        # TODO: Update confluence page
+        confluence_api.update(page['id'],
+                              content=html,
+                              title=metadata['title'],
+                              slug=page_slug,
+                              space=space,
+                              ancestor_id=ancestor_id,
+                              page=page)
     else:
-        log.info('Page {} do not exists'.format(page))
-        # TODO: Create confluence page
+        confluence_api.create(content=html,
+                              title=metadata['title'],
+                              slug=page_slug,
+                              space=space,
+                              ancestor_id=ancestor_id)
 
 
 def main():
     args = parse_args()
 
-    # TODO: init confluence api
     confluence_api = ConfluenceAPI(api_url=args.api_url,
                                    username=args.username,
                                    password=args.password)
