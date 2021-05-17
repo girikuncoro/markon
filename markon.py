@@ -48,6 +48,12 @@ def parse_args():
         help='Confluence id of parent page to put the markdown file under'
     )
     parser.add_argument(
+        '--attachment-static-path',
+        dest='attachment_static_path',
+        default='',
+        help='The path of static folder where images and assets of attachments are stored'
+    )
+    parser.add_argument(
         'pages',
         type=str,
         nargs='*',
@@ -88,9 +94,9 @@ def create_or_update_page(page_path, args, confluence_api):
     # TODO: Check author from metadata and confluence
 
     html, attachments = convert_to_confluence(markdown, metadata=metadata)
-
     for i, attachment in enumerate(attachments):
-        attachments[i] = os.path.abspath(attachment.lstrip('/'))
+        filename = os.path.basename(attachment.lstrip('/'))
+        attachments[i] = os.path.join(args.attachment_static_path, filename)
 
     page_slug = get_slug(page_path)
 
@@ -103,22 +109,22 @@ def create_or_update_page(page_path, args, confluence_api):
         space=space
     )
 
-    if page:
-        confluence_api.update(page['id'],
-                              content=html,
-                              title=metadata['title'],
-                              slug=page_slug,
-                              space=space,
-                              ancestor_id=ancestor_id,
-                              page=page,
-                              attachments=attachments)
-    else:
-        confluence_api.create(content=html,
-                              title=metadata['title'],
-                              slug=page_slug,
-                              space=space,
-                              ancestor_id=ancestor_id,
-                              attachments=attachments)
+    # if page:
+    #     confluence_api.update(page['id'],
+    #                           content=html,
+    #                           title=metadata['title'],
+    #                           slug=page_slug,
+    #                           space=space,
+    #                           ancestor_id=ancestor_id,
+    #                           page=page,
+    #                           attachments=attachments)
+    # else:
+    #     confluence_api.create(content=html,
+    #                           title=metadata['title'],
+    #                           slug=page_slug,
+    #                           space=space,
+    #                           ancestor_id=ancestor_id,
+    #                           attachments=attachments)
 
 
 def main():
