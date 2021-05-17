@@ -97,6 +97,7 @@ def create_or_update_page(page_path, args, confluence_api):
     for i, attachment in enumerate(attachments):
         filename = os.path.basename(attachment.lstrip('/'))
         attachments[i] = os.path.join(args.attachment_static_path, filename)
+        print(attachments[i])
 
     page_slug = get_slug(page_path)
 
