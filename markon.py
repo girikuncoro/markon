@@ -110,22 +110,22 @@ def create_or_update_page(page_path, args, confluence_api):
         space=space
     )
 
-    # if page:
-    #     confluence_api.update(page['id'],
-    #                           content=html,
-    #                           title=metadata['title'],
-    #                           slug=page_slug,
-    #                           space=space,
-    #                           ancestor_id=ancestor_id,
-    #                           page=page,
-    #                           attachments=attachments)
-    # else:
-    #     confluence_api.create(content=html,
-    #                           title=metadata['title'],
-    #                           slug=page_slug,
-    #                           space=space,
-    #                           ancestor_id=ancestor_id,
-    #                           attachments=attachments)
+    if page:
+        confluence_api.update(page['id'],
+                              content=html,
+                              title=metadata['title'],
+                              slug=page_slug,
+                              space=space,
+                              ancestor_id=ancestor_id,
+                              page=page,
+                              attachments=attachments)
+    else:
+        confluence_api.create(content=html,
+                              title=metadata['title'],
+                              slug=page_slug,
+                              space=space,
+                              ancestor_id=ancestor_id,
+                              attachments=attachments)
 
 
 def main():
