@@ -63,3 +63,11 @@ class ConfluenceRenderer(mistune.Renderer):
                 os.path.basename(src))
             self.attachments.append(src)
         return tag_template.format(image_tag=image_tag)
+
+    def block_code(self, code, lang):
+        return textwrap.dedent('''\
+            <ac:structured-macro ac:name="code" ac:schema-version="1">
+                <ac:parameter ac:name="language">{l}</ac:parameter>
+                <ac:plain-text-body><![CDATA[{c}]]></ac:plain-text-body>
+            </ac:structured-macro>
+        ''').format(c=code, l=lang or '')
